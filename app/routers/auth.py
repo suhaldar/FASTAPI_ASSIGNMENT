@@ -1,8 +1,9 @@
+"""Authentication router module."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import timedelta
-from typing import List
+from typing import List, Dict, Any
 
 from ..database import get_db
 from ..models import user as models
@@ -18,24 +19,49 @@ from ..utils.security import (
 router = APIRouter()
 
 @router.post("/register", response_model=schemas.User)
-def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter(models.User.email == user.email).first()
-    if db_user:
-        raise HTTPException(
-            status_code=400,
-            detail="Email already registered"
-        )
+async def register_user(
+    user: schemas.UserCreate,
+    db: Session = Depends(get_db)
+) -> Any:
+    """
+    Register a new user.
     
-    hashed_password = get_password_hash(user.password)
-    db_user = models.User(
-        email=user.email,
-        hashed_password=hashed_password,
-        role=user.role
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
+    Args:
+        user: User data for registration
+        db: Database session
+    
+    Returns:
+        Created user object
+    
+    Raises:
+        HTTPException: If email already exists
+    """
+    try:
+        db_user = db.query(models.User).filter(
+            models.User.email == user.email
+        ).first()
+        if db_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered"
+            )
+        
+        hashed_password = get_password_hash(user.password)
+        db_user = models.User(
+            email=user.email,
+            hashed_password=hashed_password,
+            role=user.role
+        )
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        return db_user
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        ) from e
 
 @router.post("/token", response_model=schemas.Token)
 async def login_for_access_token(
