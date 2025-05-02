@@ -4,22 +4,33 @@ A FastAPI-based RESTful API for managing parking slots, bookings, and user feedb
 
 ## Features
 
-- JWT-based authentication
-- Role-based access control (Admin/User)
-- Parking slot management
-- Booking system
-- User feedback collection
-- Administrative tools for bulk operations
-- Maintenance mode for parking slots
+- 🔐 JWT-based authentication with role-based access control (Admin/User)
+- 🅿️ Comprehensive parking slot management
+  - Create, update, and delete parking slots
+  - Bulk operations for efficient management
+  - Maintenance mode for parking slots
+- 📅 Advanced booking system
+  - Real-time slot availability
+  - Booking creation and cancellation
+  - User-specific booking history
+- 💬 Feedback system
+  - Submit and view feedback
+  - Rating system
+  - Admin feedback management
+- 📊 Administrative tools
+  - Bulk operations
+  - User management
+  - System monitoring
 
 ## Tech Stack
 
-- Python 3.8+
-- FastAPI
-- SQLAlchemy (SQLite database)
-- Pydantic
-- JWT for authentication
-- Pytest for testing
+- 🐍 Python 3.8+
+- ⚡ FastAPI - High-performance web framework
+- 🗄️ SQLAlchemy - SQL toolkit and ORM
+- 📦 Pydantic - Data validation
+- 🔑 JWT - Secure authentication
+- 🧪 Pytest - Testing framework
+- 📊 SQLite - Lightweight database
 
 ## Installation
 
@@ -47,44 +58,83 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-2. Access the API documentation at:
+2. Access the API documentation:
 - Swagger UI: http://localhost:8000/docs
 - ReDoc: http://localhost:8000/redoc
 
 ## API Endpoints
 
 ### Authentication
-- POST `/register` - Register a new user
-- POST `/token` - Login and get access token
-- GET `/users/me` - Get current user information
+- `POST /register` - Register a new user
+- `POST /token` - Login and get access token
+- `GET /users/me` - Get current user information
 
 ### Parking Slots
-- GET `/parking-slots` - List all parking slots
-- POST `/parking-slots` - Create a new parking slot (Admin only)
-- PUT `/parking-slots/{slot_id}` - Update a parking slot (Admin only)
-- DELETE `/parking-slots/{slot_id}` - Delete a parking slot (Admin only)
-- POST `/parking-slots/bulk` - Bulk create parking slots (Admin only)
-- PUT `/parking-slots/{slot_id}/maintenance` - Set maintenance mode (Admin only)
+- `GET /parking-slots` - List all parking slots
+- `POST /parking-slots` - Create a new parking slot (Admin only)
+- `PUT /parking-slots/{slot_id}` - Update a parking slot (Admin only)
+- `DELETE /parking-slots/{slot_id}` - Delete a parking slot (Admin only)
+- `POST /parking-slots/bulk` - Bulk create parking slots (Admin only)
+- `PUT /parking-slots/{slot_id}/maintenance` - Set maintenance mode (Admin only)
 
 ### Bookings
-- POST `/bookings` - Create a new booking
-- GET `/bookings` - List user's bookings
-- PUT `/bookings/{booking_id}/cancel` - Cancel a booking
+- `POST /bookings` - Create a new booking
+- `GET /bookings` - List user's bookings
+- `PUT /bookings/{booking_id}/cancel` - Cancel a booking
 
 ### Feedback
-- POST `/feedback` - Submit feedback for a booking
-- GET `/feedback` - List user's feedback
-- GET `/feedback/{booking_id}` - Get feedback for a specific booking
+- `POST /feedback` - Submit feedback for a booking
+- `GET /feedback` - List user's feedback
+- `GET /feedback/{booking_id}` - Get feedback for a specific booking
 
 ## Testing
 
 Run the tests using pytest:
 ```bash
-# Install pytest and pytest-cov if not already installed
-pip install pytest pytest-cov
+# Install test dependencies
+pip install -r requirements-test.txt
 
 # Run tests with coverage report
 pytest --cov=app tests/
 ```
 
-## Project Structure 
+## Project Structure
+
+```
+FASTAPI_ASSIGNMENT/
+├── app/
+│   ├── models/          # Database models
+│   ├── routers/         # API endpoints
+│   ├── schemas/         # Pydantic models
+│   ├── utils/           # Utility functions
+│   ├── database.py      # Database configuration
+│   └── main.py          # Application entry point
+├── tests/               # Test files
+├── requirements.txt     # Production dependencies
+├── requirements-test.txt # Test dependencies
+└── README.md           # Project documentation
+```
+
+## Code Coverage
+
+Current code coverage:
+- Overall: 87%
+- Models: 100%
+- Routers: 
+  - Booking: 100%
+  - Parking: 99%
+  - Feedback: 86%
+  - Auth: 37%
+- Schemas: 70-100%
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details. 
