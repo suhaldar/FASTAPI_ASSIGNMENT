@@ -44,8 +44,9 @@ def client(db_session):
 def test_user(db_session):
     from app.models.user import User
     user = User(
+        username="testuser",
         email="test@example.com",
-        hashed_password="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LcdYIdQGwQ05gXQ5i",  # password: test123
+        password="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LcdYIdQGwQ05gXQ5i",  # password: test123
         role="user"
     )
     db_session.add(user)
@@ -56,10 +57,19 @@ def test_user(db_session):
 def test_admin(db_session):
     from app.models.user import User
     admin = User(
+        username="testadmin",
         email="admin@example.com",
-        hashed_password="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LcdYIdQGwQ05gXQ5i",  # password: test123
+        password="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LcdYIdQGwQ05gXQ5i",  # password: test123
         role="admin"
     )
     db_session.add(admin)
     db_session.commit()
-    return admin 
+    return admin
+
+@pytest.fixture
+def user_token(test_user):
+    return create_access_token(data={"sub": test_user.username})
+
+@pytest.fixture
+def admin_token(test_admin):
+    return create_access_token(data={"sub": test_admin.username}) 
