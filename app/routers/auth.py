@@ -16,11 +16,11 @@ from ..utils.security import (
 
 router = APIRouter()
 
-@router.post("/register", response_model=Dict[str, str])
+@router.post("/register")
 async def register_user(
     request: user_schemas.User,
     db: Session = Depends(get_db)
-) -> Dict[str, str]:
+):
     """
     Register a new user.
     
@@ -58,11 +58,14 @@ async def register_user(
         db.refresh(db_user)
         return {"message": "User created successfully"}
     
+    except HTTPException:
+        # Re-raise HTTP exceptions as they are
+        raise
     except Exception as e:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail=f"Error registering user: {request.username}"
         ) from e
 
 @router.post("/login", response_model=Dict[str, str])

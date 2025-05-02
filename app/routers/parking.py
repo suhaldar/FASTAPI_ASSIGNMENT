@@ -17,7 +17,7 @@ def list_parking_slots(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    display_slots = db.query(parking_models.ParkingSlot).limit(limit).all()
+    display_slots = db.query(parking_models.ParkingSlot).filter(parking_models.ParkingSlot.status == parking_schemas.SlotStatus.FREE).limit(limit).all()
     if not display_slots:
         raise HTTPException(status_code=404, detail="No parking slots found")
     return display_slots

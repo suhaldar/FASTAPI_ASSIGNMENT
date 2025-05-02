@@ -22,7 +22,7 @@ def create_feedback(
     if current_user.role == "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admins cannot create feedback"
+            detail="Admin cannot create feedback"
         )
     # Verify that the booking exists and belongs to the user
     booking = db.query(models_booking.Booking).filter(
@@ -38,7 +38,9 @@ def create_feedback(
     
     db_feedback = models_feedback.Feedback(
         user_id=current_user.id,
-        **feedback.dict()
+        booking_id=feedback.booking_id,
+        rating=feedback.rating,
+        comment=feedback.comment
     )
     db.add(db_feedback)
     db.commit()
@@ -59,7 +61,7 @@ def list_feedback(
     if current_user.role == "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admins is prohibited from viewing feedback"
+            detail="Admins are prohibited from viewing feedback(s)"
         )
     # Start with base query
     query = db.query(

@@ -58,11 +58,16 @@ def list_bookings(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    if current_user.role == "admin":
-        return db.query(booking_models.Booking).all()
-    return db.query(booking_models.Booking).filter(booking_models.Booking.user_id == current_user.id).all()
-
-
+    query = db.query(booking_models.Booking)
+    if current_user.role != "admin":
+        query = query.filter(booking_models.Booking.user_id == current_user.id)
+    results = query.all()
+    if not results:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No bookings found"
+        )
+    return results
 
 @router.put("/bookings/{booking_id}/cancel")
 def cancel_booking(
@@ -70,6 +75,7 @@ def cancel_booking(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+
     booking = db.query(booking_models.Booking).filter(booking_models.Booking.id == booking_id).first()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
@@ -87,7 +93,6 @@ def cancel_booking(
     # Free up the parking slot
     slot = db.query(parking_models.ParkingSlot).filter(
         parking_models.ParkingSlot.floor == booking.floor_id,
-        parking_models.ParkingSlot.label == booking.label_id
     ).first()
     slot.status = parking_schemas.SlotStatus.FREE
     
