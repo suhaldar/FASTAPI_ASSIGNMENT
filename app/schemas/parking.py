@@ -1,15 +1,21 @@
 from pydantic import BaseModel
 from typing import Optional
+from enum import Enum
 
-class ParkingSlotBase(BaseModel):
+class SlotStatus(str, Enum):
+    FREE = "free"
+    OCCUPIED = "occupied"
+    MAINTENANCE = "maintenance"
+
+class ParkingSlot(BaseModel):
+    floor: int
     label: str
-    status: str = "free"
+    status: Optional[SlotStatus] = SlotStatus.FREE
 
-class ParkingSlotCreate(ParkingSlotBase):
-    pass
-
-class ParkingSlot(ParkingSlotBase):
-    id: int
-
+class DisplayParkingSlot(BaseModel):
+    floor: int
+    label: str
+    status: SlotStatus
+    
     class Config:
-        from_attributes = True 
+        orm_mode = True

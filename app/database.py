@@ -14,6 +14,7 @@ try:
         connect_args={"check_same_thread": False}
     )
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 except SQLAlchemyError as e:
     raise HTTPException(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

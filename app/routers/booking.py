@@ -4,17 +4,18 @@ from typing import List
 from datetime import datetime
 
 from ..database import get_db
-from ..models import booking as models
+from ..models import booking as booking_models
 from ..models import parking as parking_models
-from ..schemas import booking as schemas
+from ..schemas import booking as booking_schemas
+from ..schemas import parking as parking_schemas
 from ..utils.security import get_current_user
 from ..models.user import User
 
 router = APIRouter()
 
-@router.post("/bookings", response_model=schemas.Booking)
+@router.post("/bookings")
 def create_booking(
-    booking: schemas.BookingCreate,
+    booking: booking_schemas.CreateBookingSlot,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -26,38 +27,42 @@ def create_booking(
 
     # Check if slot exists and is available
     slot = db.query(parking_models.ParkingSlot).filter(
-        parking_models.ParkingSlot.id == booking.slot_id
+        parking_models.ParkingSlot.floor == booking.floor_id,
+        parking_models.ParkingSlot.label == booking.label_id
     ).first()
     
     if not slot:
         raise HTTPException(status_code=404, detail="Parking slot not found")
     
-    if slot.status != parking_models.SlotStatus.FREE:
+    if slot.status != parking_schemas.SlotStatus.FREE:
         raise HTTPException(status_code=400, detail="Parking slot is not available")
     
     # Create booking
-    db_booking = models.Booking(
+    db_booking = booking_models.Booking(
         user_id=current_user.id,
-        slot_id=booking.slot_id,
+        floor_id=booking.floor_id,
+        label_id=booking.label_id,
         status="active"
     )
     
     # Update slot status
-    slot.status = parking_models.SlotStatus.OCCUPIED
+    slot.status = parking_schemas.SlotStatus.OCCUPIED
     
     db.add(db_booking)
     db.commit()
     db.refresh(db_booking)
-    return db_booking
+    return {"message": "Booking created successfully"}
 
-@router.get("/bookings", response_model=List[schemas.Booking])
+@router.get("/bookings", response_model=List[booking_schemas.DisplayBookingSlot])
 def list_bookings(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     if current_user.role == "admin":
-        return db.query(models.Booking).all()
-    return db.query(models.Booking).filter(models.Booking.user_id == current_user.id).all()
+        return db.query(booking_models.Booking).all()
+    return db.query(booking_models.Booking).filter(booking_models.Booking.user_id == current_user.id).all()
+
+
 
 @router.put("/bookings/{booking_id}/cancel")
 def cancel_booking(
@@ -65,7 +70,7 @@ def cancel_booking(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+    booking = db.query(booking_models.Booking).filter(booking_models.Booking.id == booking_id).first()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
     
@@ -81,9 +86,11 @@ def cancel_booking(
     
     # Free up the parking slot
     slot = db.query(parking_models.ParkingSlot).filter(
-        parking_models.ParkingSlot.id == booking.slot_id
+        parking_models.ParkingSlot.floor == booking.floor_id,
+        parking_models.ParkingSlot.label == booking.label_id
     ).first()
-    slot.status = parking_models.SlotStatus.FREE
+    slot.status = parking_schemas.SlotStatus.FREE
     
     db.commit()
     return {"message": "Booking cancelled successfully"} 
+ 

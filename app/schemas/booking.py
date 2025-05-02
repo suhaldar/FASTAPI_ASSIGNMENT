@@ -1,19 +1,31 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+from enum import Enum
 
-class BookingBase(BaseModel):
-    slot_id: int
 
-class BookingCreate(BookingBase):
-    pass
 
-class Booking(BookingBase):
-    id: int
+
+class BookingSlot(BaseModel):
     user_id: int
+    floor_id: str
+    label_id: str
     start_time: datetime
     end_time: Optional[datetime]
     status: str
 
+class CreateBookingSlot(BaseModel):
+    floor_id: str
+    label_id: str
+    
     class Config:
-        from_attributes = True 
+        orm_mode = True
+
+class DisplayBookingSlot(BaseModel):
+    user_id: int
+    floor_id: str
+    label_id: str
+    status: str
+    
+    class Config:
+        orm_mode = True
